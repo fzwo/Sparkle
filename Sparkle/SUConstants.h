@@ -44,7 +44,6 @@ extern NSString *const SUPublicDSAKeyFileKey;
 extern NSString *const SUAutomaticallyUpdateKey;
 extern NSString *const SUAllowsAutomaticUpdatesKey;
 extern NSString *const SUEnableAutomaticChecksKey;
-extern NSString *const SUEnableAutomaticChecksKeyOld;
 extern NSString *const SUShouldAlertForUpdatesRequiringNewerOSKey;
 extern NSString *const SUEnableSystemProfilingKey;
 extern NSString *const SUSendProfileInfoKey;
@@ -76,6 +75,7 @@ extern NSString *const SUAppcastElementReleaseNotesLink;
 extern NSString *const SUAppcastElementTags;
 
 extern NSString *const SURSSAttributeURL;
+extern NSString *const SURSSAttributeLength;
 
 extern NSString *const SURSSElementDescription;
 extern NSString *const SURSSElementEnclosure;
