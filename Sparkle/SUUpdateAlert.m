@@ -260,8 +260,10 @@
 {
     NSURL *requestURL = request.URL;
     NSString *scheme = requestURL.scheme;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"        
     BOOL whitelistedSafe = [@"http" isEqualToString:scheme] || [@"https" isEqualToString:scheme] || [@"about:blank" isEqualToString:requestURL.absoluteString];
-
+#pragma clang diagnostic pop  
     // Do not allow redirects to dangerous protocols such as file://
     if (!whitelistedSafe) {
         SULog(@"Blocked display of %@ URL which may be dangerous", scheme);

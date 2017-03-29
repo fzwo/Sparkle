@@ -20,7 +20,10 @@
     {
         NSOperatingSystemVersion version = { 0, 0, 0 };
         NSURL *coreServices = [[NSFileManager defaultManager] URLForDirectory:NSCoreServiceDirectory inDomain:NSSystemDomainMask appropriateForURL:nil create:NO error:nil];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"        
         NSDictionary *dictionary = [NSDictionary dictionaryWithContentsOfURL:[coreServices URLByAppendingPathComponent:@"SystemVersion.plist"]];
+#pragma clang diagnostic pop        
         NSArray *components = [ [dictionary objectForKey: @"ProductVersion"] componentsSeparatedByString:@"."];
         version.majorVersion = components.count > 0 ? [ [components objectAtIndex:0] integerValue] : 0;
         version.minorVersion = components.count > 1 ? [ [components objectAtIndex:1] integerValue] : 0;
