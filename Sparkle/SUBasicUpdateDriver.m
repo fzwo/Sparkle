@@ -95,7 +95,11 @@
     return comparator;
 }
 
-+ (SUAppcastItem *)bestItemFromAppcastItems:(NSArray *)appcastItems getDeltaItem:(SUAppcastItem * __autoreleasing *)deltaItem withHostVersion:(NSString *)hostVersion comparator:(id<SUVersionComparison>)comparator
++ (SUAppcastItem *)bestItemFromAppcastItems:(NSArray *)appcastItems
+                               getDeltaItem:(SUAppcastItem * __autoreleasing *)deltaItem
+                getBestItemRequiringNewerOS:(SUAppcastItem * __autoreleasing *)itemRequiringNewerOS
+                            withHostVersion:(NSString *)hostVersion
+                                 comparator:(id<SUVersionComparison>)comparator
 {
     SUAppcastItem *item = nil;
     for(SUAppcastItem *candidate in appcastItems) {
@@ -106,6 +110,37 @@
         }
     }
     
+    if (item && deltaItem) {
+        SUAppcastItem *deltaUpdateItem = [[item deltaUpdates] objectForKey:hostVersion];
+        if (deltaUpdateItem && [[self class] hostSupportsItem:deltaUpdateItem]) {
+            *deltaItem = deltaUpdateItem;
+        }
+    }
+    
+
+    // Find the best supported update, and the best update that requires a newer OS
+    SUAppcastItem *itemRequiringUpdate = nil;
+    for (SUAppcastItem *candidate in appcastItems) {
+        if ([[self class] hostSupportsItem:candidate]) {
+            if (!item || [comparator compareVersion:item.versionString toVersion:candidate.versionString] == NSOrderedAscending) {
+                item = candidate;
+            }
+        }
+        else if (![[self class] hostSatisfiesMinimumSystemVersionForItem:candidate]) {
+            if (!itemRequiringUpdate || [comparator compareVersion:itemRequiringUpdate.versionString toVersion:candidate.versionString] == NSOrderedAscending) {
+                itemRequiringUpdate = candidate;
+            }
+        }
+    }
+    
+    // If we found a better item that would require a newer OS, populate the inout parameter
+    if (itemRequiringUpdate && itemRequiringNewerOS) {
+        if (!item || [comparator compareVersion:item.versionString toVersion:itemRequiringUpdate.versionString] == NSOrderedAscending) {
+            *itemRequiringNewerOS = itemRequiringUpdate;
+        }
+    }
+    
+    // If we have an item, get the delta update item for it, if available, and populate the inout parameter
     if (item && deltaItem) {
         SUAppcastItem *deltaUpdateItem = [[item deltaUpdates] objectForKey:hostVersion];
         if (deltaUpdateItem && [[self class] hostSupportsItem:deltaUpdateItem]) {
@@ -205,37 +240,11 @@
     }
     else // If not, we'll take care of it ourselves.
     {
-/////<<<<<<< HEAD
-//        id<SUVersionComparison> comparator = [self versionComparator];
-//        // find the best supported update, and the best update that requires a newer OS
-//        for (SUAppcastItem *candidate in ac.items) {
-//            if ([self hostSupportsItem:candidate]) {
-//                if (!item || [comparator compareVersion:item.versionString toVersion:candidate.versionString] == NSOrderedAscending) {
-//                    item = candidate;
-//                }
-//            }
-//            else if (![self hostSatisfiesMinimumSystemVersionForItem:candidate]) {
-//                if (!itemRequiringNewOS || [comparator compareVersion:itemRequiringNewOS.versionString toVersion:candidate.versionString] == NSOrderedAscending) {
-//                    itemRequiringNewOS = candidate;
-//                }
-//            }
-//        }
-//        
-//        if (item) {
-//            SUAppcastItem *deltaUpdateItem = [item deltaUpdates][[self.host version]];
-//            if (deltaUpdateItem && [self hostSupportsItem:deltaUpdateItem]) {
-//                self.nonDeltaUpdateItem = item;
-//                item = deltaUpdateItem;
-//            }
-//=======
-        // Find the best supported update
         SUAppcastItem *deltaUpdateItem = nil;
-        item = [[self class] bestItemFromAppcastItems:ac.items getDeltaItem:&deltaUpdateItem withHostVersion:self.host.version comparator:[self versionComparator]];
-        
+        item = [[self class] bestItemFromAppcastItems:ac.items getDeltaItem:&deltaUpdateItem getBestItemRequiringNewerOS:&itemRequiringNewOS withHostVersion:[self.host version] comparator:[self versionComparator]];
         if (item && deltaUpdateItem) {
             self.nonDeltaUpdateItem = item;
             item = deltaUpdateItem;
-//>>>>>>> upstream/master
         }
     }
 

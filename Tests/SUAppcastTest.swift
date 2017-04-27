@@ -45,22 +45,29 @@ class SUAppcastTest: XCTestCase {
             
             // Test best appcast item & a delta update item
             var deltaItem: SUAppcastItem? = nil
-            let bestAppcastItem = SUBasicUpdateDriver.bestItem(fromAppcastItems: items, getDeltaItem: &deltaItem, withHostVersion: "1.0", comparator: SUStandardVersionComparator.default())
+            let bestAppcastItem = SUBasicUpdateDriver.bestItem(fromAppcastItems: items, getDeltaItem: &deltaItem, getBestItemRequiringNewerOS: nil, withHostVersion: "1.0", comparator: SUStandardVersionComparator.default())
 
             XCTAssertEqual(bestAppcastItem, items[1])
             XCTAssertEqual(deltaItem!.fileURL.lastPathComponent, "3.0_from_1.0.patch")
             
             // Test latest delta update item available
             var latestDeltaItem: SUAppcastItem? = nil
-            SUBasicUpdateDriver.bestItem(fromAppcastItems: items, getDeltaItem: &latestDeltaItem, withHostVersion: "2.0", comparator: SUStandardVersionComparator.default())
+            SUBasicUpdateDriver.bestItem(fromAppcastItems: items, getDeltaItem: &latestDeltaItem, getBestItemRequiringNewerOS: nil, withHostVersion: "2.0", comparator: SUStandardVersionComparator.default())
             
             XCTAssertEqual(latestDeltaItem!.fileURL.lastPathComponent, "3.0_from_2.0.patch")
             
             // Test a delta item that does not exist
             var nonexistantDeltaItem: SUAppcastItem? = nil
-            SUBasicUpdateDriver.bestItem(fromAppcastItems: items, getDeltaItem: &nonexistantDeltaItem, withHostVersion: "2.1", comparator: SUStandardVersionComparator.default())
+            SUBasicUpdateDriver.bestItem(fromAppcastItems: items, getDeltaItem: &nonexistantDeltaItem, getBestItemRequiringNewerOS: nil, withHostVersion: "2.1", comparator: SUStandardVersionComparator.default())
             
             XCTAssertNil(nonexistantDeltaItem)
+
+            // Test item requiring newer OS
+            var updateRequiredItem: SUAppcastItem? = nil
+            let bestCompatibleAppcastItem = SUBasicUpdateDriver.bestItem(fromAppcastItems: items, getDeltaItem: nil, getBestItemRequiringNewerOS: &updateRequiredItem, withHostVersion: "2.1", comparator: SUStandardVersionComparator.default())
+
+            XCTAssertEqual(bestCompatibleAppcastItem, items[1])
+            XCTAssertEqual(updateRequiredItem, items[2])
         } catch let err as NSError {
             NSLog("%@", err);
             XCTFail(err.localizedDescription);
