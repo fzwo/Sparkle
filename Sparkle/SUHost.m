@@ -156,7 +156,7 @@
 
 - (BOOL)boolForInfoDictionaryKey:(NSString *)key
 {
-    return [[self objectForInfoDictionaryKey:key] boolValue];
+    return [(NSString *)[self objectForInfoDictionaryKey:key] boolValue];
 }
 
 - (id)objectForUserDefaultsKey:(NSString *)defaultName
